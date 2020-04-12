@@ -18,6 +18,6 @@ package org.apache.dubbo.rpc.service;
 
 public interface Destroyable {
 
-    void $destroy();
+    void $destroy() throws Throwable;
 
 }

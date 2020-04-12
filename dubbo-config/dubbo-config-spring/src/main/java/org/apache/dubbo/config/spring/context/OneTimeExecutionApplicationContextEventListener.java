@@ -34,7 +34,7 @@ import java.util.Objects;
 abstract class OneTimeExecutionApplicationContextEventListener implements ApplicationListener, ApplicationContextAware {
 
     private ApplicationContext applicationContext;
-
+    //当接收到spring的contextRefreshEvent时,开始dubbo的服务导出
     public final void onApplicationEvent(ApplicationEvent event) {
         if (isOriginalEventSource(event) && event instanceof ApplicationContextEvent) {
             onApplicationContextEvent((ApplicationContextEvent) event);

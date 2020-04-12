@@ -50,10 +50,13 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
 
     @Override
     public void initialize() throws IllegalStateException {
+        //得到配置管理器
         ConfigManager configManager = ApplicationModel.getConfigManager();
+        //得到配置中心
         Optional<Collection<ConfigCenterConfig>> defaultConfigs = configManager.getDefaultConfigCenter();
         defaultConfigs.ifPresent(configs -> {
             for (ConfigCenterConfig config : configs) {
+                //分别将global与app配置存入 remote中的dubbo.properties文件,
                 this.setExternalConfigMap(config.getExternalConfiguration());
                 this.setAppExternalConfigMap(config.getAppExternalConfiguration());
             }
@@ -129,7 +132,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
      */
     public CompositeConfiguration getConfiguration(String prefix, String id) {
         CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
-        // Config center has the highest priority
+        // Config center has the highest priority 缓存到configList(LinkedList)中
         compositeConfiguration.addConfiguration(this.getSystemConfig(prefix, id));
         compositeConfiguration.addConfiguration(this.getEnvironmentConfig(prefix, id));
         compositeConfiguration.addConfiguration(this.getAppExternalConfig(prefix, id));

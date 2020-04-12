@@ -72,11 +72,11 @@ public class MockClusterInvoker<T> implements Invoker<T> {
     public Result invoke(Invocation invocation) throws RpcException {
         Result result = null;
 
-        String value = directory.getUrl().getMethodParameter(invocation.getMethodName(), MOCK_KEY, Boolean.FALSE.toString()).trim();
+        String value = directory.getUrl().getMethodParameter(invocation.getMethodName(), MOCK_KEY, Boolean.FALSE.toString()).trim();//得到Mock
         if (value.length() == 0 || "false".equalsIgnoreCase(value)) {
             //no mock
             result = this.invoker.invoke(invocation);
-        } else if (value.startsWith("force")) {
+        } else if (value.startsWith("force")) {//如果在mock中添加  force的话。那么会直接调用mock方法
             if (logger.isWarnEnabled()) {
                 logger.warn("force-mock: " + invocation.getMethodName() + " force-mock enabled , url : " + directory.getUrl());
             }
@@ -85,7 +85,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
         } else {
             //fail-mock
             try {
-                result = this.invoker.invoke(invocation);
+                result = this.invoker.invoke(invocation);//调用下一级mock
 
                 //fix:#4585
                 if(result.getException() != null && result.getException() instanceof RpcException){
@@ -98,14 +98,14 @@ public class MockClusterInvoker<T> implements Invoker<T> {
                 }
 
             } catch (RpcException e) {
-                if (e.isBiz()) {
+                if (e.isBiz()) {//如果是业务异常的话,那么直接抛出异常
                     throw e;
                 }
 
                 if (logger.isWarnEnabled()) {
                     logger.warn("fail-mock: " + invocation.getMethodName() + " fail-mock enabled , url : " + directory.getUrl(), e);
                 }
-                result = doMockInvoke(invocation, e);
+                result = doMockInvoke(invocation, e);//失败时,会抛出异常(RpcException)
             }
         }
         return result;

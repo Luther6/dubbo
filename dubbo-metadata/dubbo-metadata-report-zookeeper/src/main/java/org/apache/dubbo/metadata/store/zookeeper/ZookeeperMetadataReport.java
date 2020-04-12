@@ -58,6 +58,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
             group = PATH_SEPARATOR + group;
         }
         this.root = group;
+        //链接
         zkClient = zookeeperTransporter.connect(url);
     }
 

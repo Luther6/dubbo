@@ -60,6 +60,7 @@ public class QosProtocolWrapper implements Protocol {
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         if (UrlUtils.isRegistry(invoker.getUrl())) {
+            //关于QosServer的使用  之后看
             startQosServer(invoker.getUrl());
             return protocol.export(invoker);
         }
@@ -69,10 +70,11 @@ public class QosProtocolWrapper implements Protocol {
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         if (UrlUtils.isRegistry(url)) {
+            //启动Qos
             startQosServer(url);
-            return protocol.refer(type, url);
+            return protocol.refer(type, url);//registry的逻辑用来合并配置等于监听端口等 1
         }
-        return protocol.refer(type, url);
+        return protocol.refer(type, url);//获取invoker 2
     }
 
     @Override

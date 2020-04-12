@@ -53,12 +53,13 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
-
+        //判断 每次发送时是否重连
         needReconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, false);
-
+        //初始化执行器
         initExecutor(url);
 
         try {
+            //初始化netty的bootstrap
             doOpen();
         } catch (Throwable t) {
             close();
@@ -187,7 +188,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             if (isConnected()) {
                 return;
             }
-
+            //连接
             doConnect();
 
             if (!isConnected()) {

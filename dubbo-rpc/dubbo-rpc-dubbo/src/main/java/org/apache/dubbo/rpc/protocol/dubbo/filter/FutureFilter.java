@@ -45,7 +45,7 @@ public class FutureFilter implements Filter, Filter.Listener2 {
 
     @Override
     public Result invoke(final Invoker<?> invoker, final Invocation invocation) throws RpcException {
-        fireInvokeCallback(invoker, invocation);
+        fireInvokeCallback(invoker, invocation);//oninvoke对每个方法调用前使用,但是并不会对整个调用有任何影响
         // need to configure if there's return value before the invocation in order to help invoker to judge if it's
         // necessary to return future.
         return invoker.invoke(invocation);

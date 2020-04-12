@@ -270,6 +270,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
+    /**
+     * 获取registry
+     * 并把配置registry ID convert 为 registryConfigs
+     *
+     * 如果都没有配置则取所有的registry并缓存到registries
+     */
     private void convertRegistryIdsToRegistries() {
         computeValidRegistryIds();
         if (StringUtils.isEmpty(registryIds)) {
@@ -304,7 +310,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 throw new IllegalStateException("Too much registries found, the registries assigned to this service " +
                         "are :" + registryIds + ", but got " + tmpRegistries.size() + " registries!");
             }
-
+            //registries  缓存注册中心
             setRegistries(tmpRegistries);
         }
 

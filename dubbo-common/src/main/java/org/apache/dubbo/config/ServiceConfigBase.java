@@ -209,8 +209,21 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     public void completeCompoundConfigs() {
-    	super.completeCompoundConfigs(provider);
-    	if(provider != null) {
+        //该provider实在解析ServiceBean的时候通过set方法检测调用注入进来provider -> ServiceBean 初始化顺序 DubboNamespaceHandler
+        //初始化application、monitor等 registries ????-todo
+    	super.completeCompoundConfigs(provider);//填充上层配置信息application,registry,monitor等
+        //AbstractInterfaceConfig该抽象类是只会AbstractProviderConfig与AbstractReferenceConfig所继承。
+        /*
+        总结一下dubbo中的一些配置规则,
+        1、首先会去加载xml或者本地配置文件来把配置刷新到对应的bean对象中，在每个对象解析完之后把自己注册到spring容器中。
+        2、在之后Spring初始化了dubbo中设定的DubboBootstrapApplicationListener监听器,在spring初始化这个监听器时,会触发器构造方法其构造方法主要
+        用来初始化configManager与environment类。
+        3、之后会调用PostConstruct处理器将自己注入到configManager类中
+        4、之后会首先到远程的配置中心获取数据信息,然后根据配置的位置顺序对上述的配置对象从configManager中取出做第一次刷新(这里由于取出的是app与global所以并没有刷新serviceConfig),这里只刷新了boolean类型的信息
+        5、在这一步先要了解dubbo中配置的继承关系,service 继承 provider并且 service如果存在provider的配置那么就不管,如果不存在那么就获取到provider的信息来填充自己
+        然后method与service又是继承关系同样会进行上述的操作
+         */
+    	if(provider != null) {//获取上层的信息填充自己(如果有则不获取)
             if (protocols == null) {
                 setProtocols(provider.getProtocols());
             }

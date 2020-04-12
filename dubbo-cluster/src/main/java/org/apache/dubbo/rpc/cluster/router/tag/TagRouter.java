@@ -236,6 +236,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
 
         Invoker<T> invoker = invokers.get(0);
         URL url = invoker.getUrl();
+        //获取应用名
         String providerApplication = url.getParameter(CommonConstants.REMOTE_APPLICATION_KEY);
 
         if (StringUtils.isEmpty(providerApplication)) {
@@ -250,10 +251,13 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
                     ruleRepository.removeListener(application + RULE_SUFFIX, this);
                 }
                 String key = providerApplication + RULE_SUFFIX;
+                //添加监听器
                 ruleRepository.addListener(key, this);
                 application = providerApplication;
+                //获取远程节点上的规则
                 String rawRule = ruleRepository.getRule(key, DynamicConfiguration.DEFAULT_GROUP);
                 if (StringUtils.isNotEmpty(rawRule)) {
+                    //解析修改事件
                     this.process(new ConfigChangedEvent(key, DynamicConfiguration.DEFAULT_GROUP, rawRule));
                 }
             }

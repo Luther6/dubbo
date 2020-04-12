@@ -53,6 +53,7 @@ public class Transporters {
         } else {
             handler = new ChannelHandlerDispatcher(handlers);
         }
+        //生成传输层处理器 并绑定handler链
         return getTransporter().bind(url, handler);
     }
 
@@ -72,6 +73,7 @@ public class Transporters {
         } else {
             handler = new ChannelHandlerDispatcher(handlers);
         }
+        //根据客户端类型进行连接
         return getTransporter().connect(url, handler);
     }
 

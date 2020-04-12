@@ -56,9 +56,11 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
     private ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
 
     public AbstractServer(URL url, ChannelHandler handler) throws RemotingException {
+        //对timeout codec  与url providerUrl缓存
         super(url, handler);
+        //从url中获取本地地址
         localAddress = getUrl().toInetSocketAddress();
-
+        //获取本地bindIp 与bindPort
         String bindIp = getUrl().getParameter(Constants.BIND_IP_KEY, getUrl().getHost());
         int bindPort = getUrl().getParameter(Constants.BIND_PORT_KEY, getUrl().getPort());
         if (url.getParameter(ANYHOST_KEY, false) || NetUtils.isInvalidLocalHost(bindIp)) {
@@ -68,6 +70,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
         this.accepts = url.getParameter(ACCEPTS_KEY, DEFAULT_ACCEPTS);
         this.idleTimeout = url.getParameter(IDLE_TIMEOUT_KEY, DEFAULT_IDLE_TIMEOUT);
         try {
+            //打开链接并为该server生成channel
             doOpen();
             if (logger.isInfoEnabled()) {
                 logger.info("Start " + getClass().getSimpleName() + " bind " + getBindAddress() + ", export " + getLocalAddress());
@@ -76,6 +79,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
             throw new RemotingException(url.toInetSocketAddress(), null, "Failed to bind " + getClass().getSimpleName()
                     + " on " + getLocalAddress() + ", cause: " + t.getMessage(), t);
         }
+        //创建线程执行器
         executor = executorRepository.createExecutorIfAbsent(url);
     }
 

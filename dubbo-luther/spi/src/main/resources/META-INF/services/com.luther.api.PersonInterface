@@ -1,0 +1,4 @@
+com.luther.impl.Chinese
+america=com.luther.impl.America
+com.luther.wrapper.NorthWrapper
+com.luther.wrapper.PersonWrapper

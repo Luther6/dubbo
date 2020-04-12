@@ -97,7 +97,7 @@ public class CacheListener implements DataListener {
         }
 
         if (eventType == EventType.INITIALIZED) {
-            initializedLatch.countDown();
+            initializedLatch.countDown(); //连接初次建立
             return;
         }
 

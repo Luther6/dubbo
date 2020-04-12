@@ -185,7 +185,7 @@ public class AsyncRpcResult implements Result {
             return RpcContext.getContext().getFuture();
         }
 
-        return getAppResponse().recreate();
+        return getAppResponse().recreate();//recreate()判断是否存在异常等
     }
 
     public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {

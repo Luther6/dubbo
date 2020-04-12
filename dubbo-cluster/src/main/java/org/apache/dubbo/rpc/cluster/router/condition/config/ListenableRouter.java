@@ -61,13 +61,15 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
             logger.info("Notification of condition rule, change type is: " + event.getChangeType() +
                     ", raw rule is:\n " + event.getContent());
         }
-
+        //如果是删除了该节点.那么就要删除对应的节点配置
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             routerRule = null;
             conditionRouters = Collections.emptyList();
         } else {
             try {
+                //如果是修改等操作 则会解析之后的配置并进行对应的更新
                 routerRule = ConditionRuleParser.parse(event.getContent());
+                //更新配置信息
                 generateConditions(routerRule);
             } catch (Exception e) {
                 logger.error("Failed to parse the raw condition rule and it will not take effect, please check " +
@@ -119,8 +121,10 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
         }
         String routerKey = ruleKey + RULE_SUFFIX;
         ruleRepository.addListener(routerKey, this);
+        //添加节点等信息后再获取该节点内容  如果有内容的话则对其进行解析配置
         String rule = ruleRepository.getRule(routerKey, DynamicConfiguration.DEFAULT_GROUP);
         if (StringUtils.isNotEmpty(rule)) {
+            //do
             this.process(new ConfigChangedEvent(routerKey, DynamicConfiguration.DEFAULT_GROUP, rule));
         }
     }

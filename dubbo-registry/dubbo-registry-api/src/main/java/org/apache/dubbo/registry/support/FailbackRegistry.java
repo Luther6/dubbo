@@ -232,11 +232,16 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             logger.info("URL " + url + " will not be registered to Registry. Registry " + url + " does not accept service of this protocol type.");
             return;
         }
+        //在本地添加 url缓存 registered (provider:provider consumer:consumer) 这里都是创建的临时节点用来统计有多少个provider与consumer
         super.register(url);
         removeFailedRegistered(url);
         removeFailedUnregistered(url);
         try {
-            // Sending a registration request to the server side
+            // Sending a registration request to the server side 注册路径为
+            // /dubbo/com.luther.api.CountryService/providers/dubbo%3A%2F%2F192.168.28.1%3A20881%2Fhello%3Fanyhost%3Dtrue%26application%3Ddemo-provider%26async%3Dtrue%26deprecated%3Dfalse%26dubbo%3D2.0.2%26dynamic%3Dtrue%26export%3Dtrue%26generic%3Dfalse%26getCountry.timeout%3D17898%26interface%3Dcom.luther.api.CountryService%26metadata-type%3Dremote%26methods%3DgetCountry%26pid%3D1772%26release%3D2.7%26server%3Dnetty4%26service.filter%3Dcus%26side%3Dprovider%26timeout%3D7561%26timestamp%3D1582168737012%26token%3D123
+            // /dubbo/com.luther.api.CountryService/consumers/consumer%3A%2F%2F192.168.28.1%2Fcom.luther.api.CountryService%3Fapplication%3Ddemo-consumer%26category%3Dconsumers%26check%3Dfalse%26dubbo%3D2.0.2%26release%3D2.7
+            // 节点如果存在则会删除存在节点并重新存入
+            // 创建的是临时节点 !!! ok
             doRegister(url);
         } catch (Exception e) {
             Throwable t = e;
@@ -255,7 +260,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                 logger.error("Failed to register " + url + ", waiting for retry, cause: " + t.getMessage(), t);
             }
 
-            // Record a failed registration request to a failed list, retry regularly
+            // Record a failed registration request to a failed list, retry regularly  如果创建节点失败 这里会重试
             addFailedRegistered(url);
         }
     }

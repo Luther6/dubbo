@@ -56,6 +56,7 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
         String key = getName();
         String content = valueOf(System.currentTimeMillis());
         execute(() -> {
+            //创建  mapping节点 持久化节点
             dynamicConfiguration.publishConfig(key, buildGroup(serviceInterface, group, version, protocol), content);
             if (logger.isInfoEnabled()) {
                 logger.info(String.format("Dubbo service[%s] mapped to interface name[%s].",

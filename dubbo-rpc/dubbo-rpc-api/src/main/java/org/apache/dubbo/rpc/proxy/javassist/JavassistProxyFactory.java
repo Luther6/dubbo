@@ -38,7 +38,12 @@ public class JavassistProxyFactory extends AbstractProxyFactory {
     @Override
     public <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) {
         // TODO Wrapper cannot handle this scenario correctly: the classname contains '$'
+        /**
+         *  wrapper 构造CountryService的具体ref实现类的代理对象{@link com.luther.WrapperCountryImpl}
+         */
+
         final Wrapper wrapper = Wrapper.getWrapper(proxy.getClass().getName().indexOf('$') < 0 ? proxy.getClass() : type);
+        //返回对代理对象与接口类型和注册中心与本地的url的封装对象。这里应该就是具体的方法调用的逻辑
         return new AbstractProxyInvoker<T>(proxy, type, url) {
             @Override
             protected Object doInvoke(T proxy, String methodName,

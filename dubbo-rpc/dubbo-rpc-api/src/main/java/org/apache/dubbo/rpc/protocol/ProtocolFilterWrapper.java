@@ -51,12 +51,14 @@ public class ProtocolFilterWrapper implements Protocol {
 
     private static <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group) {
         Invoker<T> last = invoker;
+        //获取过滤器列表  getActivateExtension()可以获取到所有添加了Active注解的类 而不是一个name获取
         List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(invoker.getUrl(), key, group);
 
         if (!filters.isEmpty()) {
             for (int i = filters.size() - 1; i >= 0; i--) {
                 final Filter filter = filters.get(i);
                 final Invoker<T> next = last;
+                //为invoker建立一个链表来实现过滤器链
                 last = new Invoker<T>() {
 
                     @Override
@@ -78,7 +80,7 @@ public class ProtocolFilterWrapper implements Protocol {
                     public Result invoke(Invocation invocation) throws RpcException {
                         Result asyncResult;
                         try {
-                            asyncResult = filter.invoke(next, invocation);
+                            asyncResult = filter.invoke(next, invocation);//进入调用链
                         } catch (Exception e) {
                             if (filter instanceof ListenableFilter) {// Deprecated!
                                 Filter.Listener listener = ((ListenableFilter) filter).listener();
@@ -93,7 +95,7 @@ public class ProtocolFilterWrapper implements Protocol {
                         } finally {
 
                         }
-                        return asyncResult.whenCompleteWithContext((r, t) -> {
+                        return asyncResult.whenCompleteWithContext((r, t) -> {  //调用filter对结果进行处理Listener2 onMessage onResponse
                             if (filter instanceof ListenableFilter) {// Deprecated!
                                 Filter.Listener listener = ((ListenableFilter) filter).listener();
                                 if (listener != null) {
@@ -140,8 +142,10 @@ public class ProtocolFilterWrapper implements Protocol {
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         if (UrlUtils.isRegistry(invoker.getUrl())) {
+            //go
             return protocol.export(invoker);
         }
+        //在第一次registry协议后更改为具体协议进行导出  buildInvokerChain 构建服务调用过滤链并生成过滤链中第一个Invoker
         return protocol.export(buildInvokerChain(invoker, SERVICE_FILTER_KEY, CommonConstants.PROVIDER));
     }
 
@@ -150,6 +154,7 @@ public class ProtocolFilterWrapper implements Protocol {
         if (UrlUtils.isRegistry(url)) {
             return protocol.refer(type, url);
         }
+        //filter handler invoker(invokers classType url)
         return buildInvokerChain(protocol.refer(type, url), REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
     }
 

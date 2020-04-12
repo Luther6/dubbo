@@ -36,11 +36,13 @@ public class DubboBootstrapApplicationListener extends OneTimeExecutionApplicati
     private final DubboBootstrap dubboBootstrap;
 
     public DubboBootstrapApplicationListener() {
+        //在实例化 监听器时会初始化配置根类与环境根类
         this.dubboBootstrap = DubboBootstrap.getInstance();
     }
 
     @Override
     public void onApplicationContextEvent(ApplicationContextEvent event) {
+        //dubbo的服务导出是基于spring的事件来进行导出的,在这里进行服务导出
         if (event instanceof ContextRefreshedEvent) {
             onContextRefreshedEvent((ContextRefreshedEvent) event);
         } else if (event instanceof ContextClosedEvent) {
@@ -49,6 +51,7 @@ public class DubboBootstrapApplicationListener extends OneTimeExecutionApplicati
     }
 
     private void onContextRefreshedEvent(ContextRefreshedEvent event) {
+        //服务导出入口
         dubboBootstrap.start();
     }
 

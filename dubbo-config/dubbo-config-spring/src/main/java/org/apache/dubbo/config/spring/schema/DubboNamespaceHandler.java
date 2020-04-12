@@ -58,6 +58,7 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
 
     @Override
     public void init() {
+        //用来解析dubbo中的xml配置文件中的信息,将xml的配置转为对应的对象类型
         registerBeanDefinitionParser("application", new DubboBeanDefinitionParser(ApplicationConfig.class, true));
         registerBeanDefinitionParser("module", new DubboBeanDefinitionParser(ModuleConfig.class, true));
         registerBeanDefinitionParser("registry", new DubboBeanDefinitionParser(RegistryConfig.class, true));
@@ -85,8 +86,8 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
     @Override
     public BeanDefinition parse(Element element, ParserContext parserContext) {
         BeanDefinitionRegistry registry = parserContext.getRegistry();
-        registerAnnotationConfigProcessors(registry);
-        registerApplicationListeners(registry);
+        registerAnnotationConfigProcessors(registry);//注册注解处理器
+        registerApplicationListeners(registry);//注册监听器
         BeanDefinition beanDefinition = super.parse(element, parserContext);
         setSource(beanDefinition);
         return beanDefinition;
@@ -101,8 +102,8 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
      * @since 2.7.5
      */
     private void registerApplicationListeners(BeanDefinitionRegistry registry) {
-        registerBeans(registry, DubboLifecycleComponentApplicationListener.class);
-        registerBeans(registry, DubboBootstrapApplicationListener.class);
+        registerBeans(registry, DubboLifecycleComponentApplicationListener.class);//生命周期监听器
+        registerBeans(registry, DubboBootstrapApplicationListener.class);//dubbo启动监听器
     }
 
     /**

@@ -133,10 +133,10 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         String methodName = invocation == null ? StringUtils.EMPTY_STRING : invocation.getMethodName();
 
         boolean sticky = invokers.get(0).getUrl()
-                .getMethodParameter(methodName, CLUSTER_STICKY_KEY, DEFAULT_CLUSTER_STICKY);
+                .getMethodParameter(methodName, CLUSTER_STICKY_KEY, DEFAULT_CLUSTER_STICKY);//sticky 是否开启粘性功能,如果开启的话，那么一个接口将会只对应一个provider
 
         //ignore overloaded method
-        if (stickyInvoker != null && !invokers.contains(stickyInvoker)) {
+        if (stickyInvoker != null && !invokers.contains(stickyInvoker)) { //如果当前的粘性invoker对应的provider已经挂掉了那么就会重新粘贴
             stickyInvoker = null;
         }
         //ignore concurrency problem
@@ -146,7 +146,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             }
         }
 
-        Invoker<T> invoker = doSelect(loadbalance, invocation, invokers, selected);
+        Invoker<T> invoker = doSelect(loadbalance, invocation, invokers, selected);//选择
 
         if (sticky) {
             stickyInvoker = invoker;
@@ -161,12 +161,24 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             return null;
         }
         if (invokers.size() == 1) {
-            return invokers.get(0);
+            return invokers.get(0);//如果只有一个直接返回
         }
-        Invoker<T> invoker = loadbalance.select(invokers, getUrl(), invocation);
+        //1、random具体选择逻辑
+        //  1)、如果所有的invoker权重一致,那么直接采用random算法
+        //  2)、如果权重不一样,那么则会采取加权random算法,具体采用offset来进行实现
+        //2、roundRobin算法
+        //  1)、如果权重相同退化为普通roundRobin算法
+        //  2)、如果权重不相同这里采用并不是直接使用offset的方法。因为为了让服务器看似更均衡一点。这里采用了平滑加权轮询算法,在offset的基础上打散了配置
+        //3、leastActive算法
+        //  1)、如果最小活跃数不同，采用最小活跃算法
+        //  2)、如果活跃数相同的话,那么则退化为加权random算法
+        //4、consistentHash算法
+        //  具体步骤,先根据invokers生成对应的节点,然后再为每个节点生成160个虚拟节点,然后用treeMap红黑树结构构造一个有顺序的顺时针hash环。
+        //  之后使用方法参数来进行一次hash如果不大于最大的hash值,那么直接顺时针选择invoker如果大于则选择最小的hash值。treemap来完成
+        Invoker<T> invoker = loadbalance.select(invokers, getUrl(), invocation);//根据具体的选择算法获取
 
         //If the `invoker` is in the  `selected` or invoker is unavailable && availablecheck is true, reselect.
-        if ((selected != null && selected.contains(invoker))
+        if ((selected != null && selected.contains(invoker))//如果选择出来的invoker在之前用过了,因为可能再次出错,进行重新选择
                 || (!invoker.isAvailable() && getUrl() != null && availablecheck)) {
             try {
                 Invoker<T> rInvoker = reselect(loadbalance, invocation, invokers, selected, availablecheck);
@@ -241,7 +253,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     @Override
     public Result invoke(final Invocation invocation) throws RpcException {
-        checkWhetherDestroyed();
+        checkWhetherDestroyed();//判断该Invoker是否被destroy
 
         // binding attachments into invocation.
         Map<String, Object> contextAttachments = RpcContext.getContext().getAttachments();
@@ -249,8 +261,8 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             ((RpcInvocation) invocation).addAttachments(contextAttachments);
         }
 
-        List<Invoker<T>> invokers = list(invocation);
-        LoadBalance loadbalance = initLoadBalance(invokers, invocation);
+        List<Invoker<T>> invokers = list(invocation);//进行路由的筛选返回可以使用Invoker
+        LoadBalance loadbalance = initLoadBalance(invokers, invocation);//根据配置的loadbalance获取对应的实例
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
         return doInvoke(invocation, invokers, loadbalance);
     }

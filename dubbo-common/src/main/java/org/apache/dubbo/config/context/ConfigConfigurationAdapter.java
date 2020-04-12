@@ -29,6 +29,7 @@ public class ConfigConfigurationAdapter implements Configuration {
     private Map<String, String> metaData;
 
     public ConfigConfigurationAdapter(AbstractConfig config) {
+        //获取该配置的所有元数据属性
         this.metaData = config.getMetaData();
     }
 

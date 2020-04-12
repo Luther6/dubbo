@@ -420,9 +420,11 @@ public abstract class AbstractRegistry implements Registry {
             String category = entry.getKey();
             List<URL> categoryList = entry.getValue();
             categoryNotified.put(category, categoryList);
+            //通知服务列表 配置信息已经改变 对其进行更新 并翻译、过滤invoker
             listener.notify(categoryList);
             // We will update our cache file after each notification.
             // When our Registry has a subscribe failure due to network jitter, we can return at least the existing cache URL.
+            //将consumerUrl
             saveProperties(url);
         }
     }

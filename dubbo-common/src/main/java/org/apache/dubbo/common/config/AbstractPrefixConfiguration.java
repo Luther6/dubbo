@@ -36,7 +36,7 @@ public abstract class AbstractPrefixConfiguration implements Configuration {
 
     @Override
     public Object getProperty(String key, Object defaultValue) {
-        Object value = null;
+        Object value = null;   //脑子坏了，如果要配置全局属性的话,那么必须要配置dubbo.type.id.XXX=8999 如果要配置全局的话,则配置dubbo.type.XXXX=999  dubbo.reference.com.luther.api.CountryService.
         if (StringUtils.isNotEmpty(prefix)) {
             if (StringUtils.isNotEmpty(id)) {
                 value = getInternalProperty(prefix + id + "." + key);

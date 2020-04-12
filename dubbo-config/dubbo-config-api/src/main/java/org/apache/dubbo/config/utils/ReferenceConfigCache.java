@@ -224,7 +224,11 @@ public class ReferenceConfigCache {
         proxies.forEach((_type, proxiesOfType) -> {
             proxiesOfType.forEach((_k, v) -> {
                 Destroyable proxy = (Destroyable) v;
-                proxy.$destroy();
+                try {
+                    proxy.$destroy();
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
             });
         });
 

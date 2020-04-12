@@ -82,7 +82,7 @@ public class MonitorFilter implements Filter, Filter.Listener2 {
      */
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
+        if (invoker.getUrl().hasParameter(MONITOR_KEY)) {//对于监控信息的获取
             invocation.put(MONITOR_FILTER_START_TIME, System.currentTimeMillis());
             getConcurrent(invoker, invocation).incrementAndGet(); // count up
         }

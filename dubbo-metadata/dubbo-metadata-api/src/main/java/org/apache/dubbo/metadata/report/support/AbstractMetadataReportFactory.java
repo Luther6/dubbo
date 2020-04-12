@@ -42,10 +42,12 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
         // Lock the metadata access process to ensure a single instance of the metadata instance
         LOCK.lock();
         try {
+            //获取-缓存 key:url val:MedataReport
             MetadataReport metadataReport = SERVICE_STORE_MAP.get(key);
             if (metadataReport != null) {
                 return metadataReport;
             }
+            //create 根据url中协议选择对应的处理类 并根据address获取zkClient
             metadataReport = createMetadataReport(url);
             if (metadataReport == null) {
                 throw new IllegalStateException("Can not create metadata Report " + url);

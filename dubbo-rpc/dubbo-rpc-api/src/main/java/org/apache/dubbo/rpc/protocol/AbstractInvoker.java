@@ -141,7 +141,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         RpcInvocation invocation = (RpcInvocation) inv;
         invocation.setInvoker(this);
         if (CollectionUtils.isNotEmptyMap(attachment)) {
-            invocation.addAttachmentsIfAbsent(attachment);
+            invocation.addAttachmentsIfAbsent(attachment);//添加attachment 如token inteface timeout等
         }
         Map<String, Object> contextAttachments = RpcContext.getContext().getAttachments();
         if (CollectionUtils.isNotEmptyMap(contextAttachments)) {
@@ -151,15 +151,15 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
              * by the built-in retry mechanism of the Dubbo. The attachment to update RpcContext will no longer work, which is
              * a mistake in most cases (for example, through Filter to RpcContext output traceId and spanId and other information).
              */
-            invocation.addAttachments(contextAttachments);
+            invocation.addAttachments(contextAttachments);//添加context信息
         }
 
-        invocation.setInvokeMode(RpcUtils.getInvokeMode(url, invocation));
-        RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
+        invocation.setInvokeMode(RpcUtils.getInvokeMode(url, invocation));//获取调用方式,异步还是同步
+        RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);//如果为异步调用则添加INVOKE_ID信息
 
         AsyncRpcResult asyncResult;
         try {
-            asyncResult = (AsyncRpcResult) doInvoke(invocation);
+            asyncResult = (AsyncRpcResult) doInvoke(invocation);//调用
         } catch (InvocationTargetException e) { // biz exception
             Throwable te = e.getTargetException();
             if (te == null) {

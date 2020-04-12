@@ -38,7 +38,9 @@ public class MetadataReportInstance {
         if (init.get()) {
             return;
         }
+        //获取到MetadataReportFactory的代理对象  MetadataReportFactory下的SPI扩展
         MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
+        //根据key更改url协议
         if (METADATA_REPORT_KEY.equals(metadataReportURL.getProtocol())) {
             String protocol = metadataReportURL.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
             metadataReportURL = URLBuilder.from(metadataReportURL)
@@ -46,6 +48,7 @@ public class MetadataReportInstance {
                     .removeParameter(METADATA_REPORT_KEY)
                     .build();
         }
+        //构造MetadataReportFactory
         metadataReport = metadataReportFactory.getMetadataReport(metadataReportURL);
         init.set(true);
     }

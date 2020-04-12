@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+       http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
+
+    <dubbo:application metadata-type="remote" name="demo-provider" />
+    <!--zookeeper://127.0.0.1:2181?127.0.0.1:8989,127.0.0.1:9999-->
+    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181" retry-times="1"/>
+
+    <dubbo:config-center address="zookeeper://127.0.0.1:2181" timeout="5001" />
+    <dubbo:registry address="127.0.0.1:2181" id="abc" protocol="zookeeper" port="2182"/>
+    <dubbo:registry address="127.0.0.1:2189" id="red" protocol="apollo" dynamic="true"/>  <!--client=""-->
+    <dubbo:protocol name="dubbo" id="abd" port="20881" />
+    <dubbo:protocol name="dubbo" id="abe" port="20882" /> <!--codec="dubbo" optimizer="" host=""-->
+    <dubbo:protocol name="http" id="ab" path="panda" />
+
+    <bean id="countryService" class="com.luther.impl.CountryServiceImpl" />
+    <bean id="cityService" class="com.luther.impl.CityServiceImpl" />
+    <dubbo:provider export="true" timeout="7888" protocol="abd" server="netty4"  >  <!-- host=""-->
+        <dubbo:service interface="com.luther.api.CountryService" ref="countryService" timeout="4610" registry="abc,red" protocol="abd,abe"  async="false" token="123" path="hello"  filter="cus" scope="remote" >
+            <!--filter=""
+            listener=""
+            修改 /META-INF/dubbo/internal/com.alibaba.dubbo.rpc.Filter 文件增加一行：myFilter=com.zhang.MyFilter
+            3. 配置 filter 参数
+
+            <dubbo:reference id="hello" interface="com.zhang.HelloService" proxy="jdk" retries="0" filter="myFilter"/>
+
+ -->
+            <dubbo:method name="getCountry" timeout="17898" />
+        </dubbo:service>
+    </dubbo:provider>
+    <dubbo:provider timeout="7999"/>
+    <dubbo:service interface="com.luther.api.CityService" ref="cityService" timeout="5000" registry="abc" protocol="abd"/>
+
+
+</beans>

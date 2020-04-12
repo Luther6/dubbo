@@ -53,7 +53,7 @@ public class InvokerInvocationHandler implements InvocationHandler {
         if (parameterTypes.length == 0) {
             if ("toString".equals(methodName)) {
                 return invoker.toString();
-            } else if ("$destroy".equals(methodName)) {
+            } else if ("$destroy".equals(methodName)) {//删除这个invoker
                 invoker.destroy();
                 return null;
             } else if ("hashCode".equals(methodName)) {
@@ -62,8 +62,8 @@ public class InvokerInvocationHandler implements InvocationHandler {
         } else if (parameterTypes.length == 1 && "equals".equals(methodName)) {
             return invoker.equals(args[0]);
         }
-        RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args);
-        String serviceKey = invoker.getUrl().getServiceKey();
+        RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args);//包装
+        String serviceKey = invoker.getUrl().getServiceKey();//service key默认接口的binaryName
         rpcInvocation.setTargetServiceUniqueName(serviceKey);
       
         if (consumerModel != null) {
@@ -71,6 +71,6 @@ public class InvokerInvocationHandler implements InvocationHandler {
             rpcInvocation.put(Constants.METHOD_MODEL, consumerModel.getMethodModel(method));
         }
 
-        return invoker.invoke(rpcInvocation).recreate();
+        return invoker.invoke(rpcInvocation).recreate();//调用MockClusterInvoker
     }
 }

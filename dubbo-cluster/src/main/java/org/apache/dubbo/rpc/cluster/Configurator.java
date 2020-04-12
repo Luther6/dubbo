@@ -90,6 +90,7 @@ public interface Configurator extends Comparable<Configurator> {
                 configurators.clear();
                 continue;
             }
+            //第一次获取为OverrideConfigurator对象对url 的封装 然后对该对象进行缓存
             configurators.add(configuratorFactory.getConfigurator(url));
         }
         Collections.sort(configurators);

@@ -49,11 +49,15 @@ public class RouterChain<T> {
     private RouterChain(URL url) {
         List<RouterFactory> extensionFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class)
                 .getActivateExtension(url, "router");
-
+        //构建路由链并监听对应的节点 并第一次获取配置信息并解析为对应的对象存储 conditionRouters
+        //Mock -1
+        //Tag  100
+        ///dubbo/config/dubbo/com.luther.api.CountryService::.condition-router  ServiceRouter  140
+        ///dubbo/config/dubbo/demo-consumer.condition-router                      AppRouter    150
         List<Router> routers = extensionFactories.stream()
                 .map(factory -> factory.getRouter(url))
                 .collect(Collectors.toList());
-
+        //缓存路由链 并进行排序  service app tag mock 安装优先级 大刀小
         initWithRouters(routers);
     }
 
@@ -96,7 +100,7 @@ public class RouterChain<T> {
     public List<Invoker<T>> route(URL url, Invocation invocation) {
         List<Invoker<T>> finalInvokers = invokers;
         for (Router router : routers) {
-            finalInvokers = router.route(finalInvokers, url, invocation);
+            finalInvokers = router.route(finalInvokers, url, invocation);//过滤的逻辑,具体怎么过滤 之后看
         }
         return finalInvokers;
     }

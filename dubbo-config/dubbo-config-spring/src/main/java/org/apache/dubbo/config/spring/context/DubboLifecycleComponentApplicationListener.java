@@ -42,13 +42,13 @@ import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncl
 public class DubboLifecycleComponentApplicationListener extends OneTimeExecutionApplicationContextEventListener {
 
     private List<Lifecycle> lifecycleComponents = emptyList();
-
+    //当前event先于具体的服务导出,进行生命周期组件的创建
     @Override
     protected void onApplicationContextEvent(ApplicationContextEvent event) {
         if (event instanceof ContextRefreshedEvent) {
             onContextRefreshedEvent((ContextRefreshedEvent) event);
         } else if (event instanceof ContextClosedEvent) {
-            onContextClosedEvent((ContextClosedEvent) event);
+            onContextClosedEvent((ContextClosedEvent) event);//接收到spring的销毁事件后,开始调用destroy实现dubbo停机
         }
     }
 

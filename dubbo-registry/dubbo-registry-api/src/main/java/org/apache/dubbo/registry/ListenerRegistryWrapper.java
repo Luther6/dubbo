@@ -54,6 +54,7 @@ public class ListenerRegistryWrapper implements Registry {
     @Override
     public void register(URL url) {
         try {
+            //go
             registry.register(url);
         } finally {
             if (CollectionUtils.isNotEmpty(listeners)) {
@@ -102,6 +103,7 @@ public class ListenerRegistryWrapper implements Registry {
     @Override
     public void subscribe(URL url, NotifyListener listener) {
         try {
+            //订阅
             registry.subscribe(url, listener);
         } finally {
             if (CollectionUtils.isNotEmpty(listeners)) {

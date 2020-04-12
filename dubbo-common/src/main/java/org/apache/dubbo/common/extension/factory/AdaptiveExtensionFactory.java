@@ -43,6 +43,7 @@ public class AdaptiveExtensionFactory implements ExtensionFactory {
 
     @Override
     public <T> T getExtension(Class<T> type, String name) {
+        //factories 存储的注入工厂,来获取注入对象 SpringExtensionFactory SpiExtensionFactory
         for (ExtensionFactory factory : factories) {
             T extension = factory.getExtension(type, name);
             if (extension != null) {

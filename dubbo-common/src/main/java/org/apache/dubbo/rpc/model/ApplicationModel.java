@@ -78,6 +78,7 @@ public class ApplicationModel {
     private static final ExtensionLoader<FrameworkExt> LOADER = ExtensionLoader.getExtensionLoader(FrameworkExt.class);
 
     public static void initFrameworkExts() {
+        //dubbo spi FrameworkExt configManage 存在了之前解析的registry.configCenter等信息的bean(每个bean的父类都实现了@PostConstruct)
         Set<FrameworkExt> exts = ExtensionLoader.getExtensionLoader(FrameworkExt.class).getSupportedExtensionInstances();
         for (FrameworkExt ext : exts) {
             ext.initialize();

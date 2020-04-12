@@ -35,7 +35,7 @@ public class ConsumerContextClusterInterceptor implements ClusterInterceptor, Cl
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
-        RpcContext.removeServerContext();
+        RpcContext.removeServerContext();//移除刚刚添加到ThreadLocal中的Context(不懂)
     }
 
     @Override

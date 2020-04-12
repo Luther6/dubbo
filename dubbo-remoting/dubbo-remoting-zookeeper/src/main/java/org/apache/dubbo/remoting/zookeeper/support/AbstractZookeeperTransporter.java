@@ -52,21 +52,23 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
     @Override
     public ZookeeperClient connect(URL url) {
         ZookeeperClient zookeeperClient;
+        //获取所有address
         List<String> addressList = getURLBackupAddress(url);
-        // The field define the zookeeper server , including protocol, host, port, username, password
+        // The field define the zookeeper server , including protocol, host, port, username, password 根据地址字段获取缓存的client
         if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
             logger.info("find valid zookeeper client from the cache for address: " + url);
             return zookeeperClient;
         }
-        // avoid creating too many connections， so add lock
+        // avoid creating too many connections， so add lock.防止因为并发问题创建太多的client导致过多的长连接
         synchronized (zookeeperClientMap) {
             if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
                 logger.info("find valid zookeeper client from the cache for address: " + url);
                 return zookeeperClient;
             }
-
+            //curator创建client
             zookeeperClient = createZookeeperClient(url);
             logger.info("No valid zookeeper client found from cache, therefore create a new client for url. " + url);
+            //对该地址段的client进行缓存
             writeToClientMap(addressList, zookeeperClient);
         }
         return zookeeperClient;

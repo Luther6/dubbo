@@ -42,9 +42,17 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
             GovernanceRuleRepository.class).getDefaultExtension();
 
     protected final void initWith(String key) {
+        //provider
+        //添加对于/dubbo/config/dubbo/demo-provider.configurators  节点的监听器 为ProviderConfigurationListener
+        //添加对于/dubbo/config/dubbo/serviceXXX.configurators                 ServiceConfigurationListener
+        //consumer
+        // 添加对于 /dubbo/config/dubbo/demo-consumer.configurators 节点监听器   ReferenceConfigurationListener
+        //添加对于/dubbo/config/dubbo/serviceXXX.configurators
         ruleRepository.addListener(key, this);
+        //获取节点上的配置信息
         String rawConfig = ruleRepository.getRule(key, DynamicConfiguration.DEFAULT_GROUP);
         if (!StringUtils.isEmpty(rawConfig)) {
+            //解析配置信息到 configurators中
             genConfiguratorsFromRawRule(rawConfig);
         }
     }
@@ -75,6 +83,7 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
         boolean parseSuccess = true;
         try {
             // parseConfigurators will recognize app/service config automatically.
+
             configurators = Configurator.toConfigurators(ConfigParser.parseConfigurators(rawConfig))
                     .orElse(configurators);
         } catch (Exception e) {

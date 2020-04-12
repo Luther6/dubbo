@@ -69,6 +69,24 @@ public abstract class AbstractConfigurator implements Configurator {
         }
         /*
          * This if branch is created since 2.7.0.
+                 * configVersion: v2.7
+                    configs:
+                    - enabled: true
+                      parameters:
+                        loadbalance: random
+                      side: consumer
+                      type: balancing
+                    - addresses:
+                      - 0.0.0.0:20881
+                      enabled: false
+                      parameters:
+                        timeout: 7561
+                      side: provider
+                    enabled: true
+                    key: demo-provider
+                    scope: application
+
+         * 当远端的服务动态配置完毕时,并且指定了port和side相同那么会使用远端的service配置来覆盖当前配置
          */
         String apiVersion = configuratorUrl.getParameter(CONFIG_VERSION_KEY);
         if (StringUtils.isNotEmpty(apiVersion)) {
@@ -80,8 +98,13 @@ public abstract class AbstractConfigurator implements Configurator {
                 url = configureIfMatch(url.getHost(), url);
             }
         }
+
         /*
          * This else branch is deprecated and is left only to keep compatibility with versions before 2.7.0
+         * dubbo://192.168.28.1:20881/hello?anyhost=true&application=demo-provider&async=true&bind.ip=192.168.28.1&bind.port=20881&deprecated=false&dubbo=2.0.2
+         * &dynamic=true&export=true&generic=false&getCountry.timeout=17898
+         * &interface=com.luther.api.CountryService&metadata-type=remote&methods=getCountry
+         * &pid=4592&release=2.7&server=netty4&side=provider&timeout=4610&timestamp=1582121279292&token=123
          */
         else {
             url = configureDeprecated(url);

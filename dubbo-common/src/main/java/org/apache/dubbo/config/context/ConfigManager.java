@@ -72,6 +72,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public ConfigManager() {
+        System.out.println("---------");
     }
 
     // ApplicationConfig correlative methods
@@ -344,7 +345,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
             getProtocols().forEach(ProtocolConfig::refresh);
             getRegistries().forEach(RegistryConfig::refresh);
             getProviders().forEach(ProviderConfig::refresh);
-            getConsumers().forEach(ConsumerConfig::refresh);
+            getConsumers().forEach(ConsumerConfig::refresh);//注意这里并没有刷新service下的配置所以service下的配置不会被app与global刷新
         });
 
     }
@@ -386,6 +387,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
             return;
         }
         write(() -> {
+            //把每个bean放到configManager中
             Map<String, AbstractConfig> configsMap = configsCache.computeIfAbsent(getTagName(config.getClass()), type -> newMap());
             addIfAbsent(config, configsMap, unique);
         });

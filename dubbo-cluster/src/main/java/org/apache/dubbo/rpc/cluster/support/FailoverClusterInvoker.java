@@ -58,7 +58,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         List<Invoker<T>> copyInvokers = invokers;
         checkInvokers(copyInvokers, invocation);
         String methodName = RpcUtils.getMethodName(invocation);
-        int len = getUrl().getMethodParameter(methodName, RETRIES_KEY, DEFAULT_RETRIES) + 1;
+        int len = getUrl().getMethodParameter(methodName, RETRIES_KEY, DEFAULT_RETRIES) + 1;//这里加一 是因为算上了第一次的正常调用,如果不配置retries的话默认为2
         if (len <= 0) {
             len = 1;
         }
@@ -69,17 +69,17 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         for (int i = 0; i < len; i++) {
             //Reselect before retry to avoid a change of candidate `invokers`.
             //NOTE: if `invokers` changed, then `invoked` also lose accuracy.
-            if (i > 0) {
-                checkWhetherDestroyed();
-                copyInvokers = list(invocation);
+            if (i > 0) {//i > 0表示之前的调用出现失败了
+                checkWhetherDestroyed();//校验
+                copyInvokers = list(invocation);//再做一次筛选,为了防止某些问题
                 // check again
-                checkInvokers(copyInvokers, invocation);
+                checkInvokers(copyInvokers, invocation);//再次校验
             }
-            Invoker<T> invoker = select(loadbalance, invocation, copyInvokers, invoked);
-            invoked.add(invoker);
+            Invoker<T> invoker = select(loadbalance, invocation, copyInvokers, invoked);//根据相关的集群算法得到invoker
+            invoked.add(invoker);//缓存已经使用过的invoker
             RpcContext.getContext().setInvokers((List) invoked);
             try {
-                Result result = invoker.invoke(invocation);
+                Result result = invoker.invoke(invocation);//调用
                 if (le != null && logger.isWarnEnabled()) {
                     logger.warn("Although retry the method " + methodName
                             + " in the service " + getInterface().getName()

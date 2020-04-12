@@ -59,7 +59,7 @@ public class ConfigCenterConfig extends AbstractConfig {
     private String group = CommonConstants.DUBBO;
     private String username;
     private String password;
-    private Long timeout = 3000L;
+    private Long timeout = 3000L;//默认超时时间为3000
 
     // If the Config Center is given the highest priority, it will override all the other configurations
     private Boolean highestPriority = true;

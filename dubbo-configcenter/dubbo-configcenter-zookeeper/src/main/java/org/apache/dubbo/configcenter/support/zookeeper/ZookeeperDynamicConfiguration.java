@@ -61,18 +61,22 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
         this.url = url;
+        //定义rootPath:/dubbo/config
         rootPath = PATH_SEPARATOR + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
-
+        //设置阀门
         initializedLatch = new CountDownLatch(1);
+        //初始化监听器
         this.cacheListener = new CacheListener(rootPath, initializedLatch);
+        //获取线程服务
         this.executor = Executors.newFixedThreadPool(1, new NamedThreadFactory(this.getClass().getSimpleName(), true));
-
+        //连接并缓存该链接
         zkClient = zookeeperTransporter.connect(url);
+        //注册监听器
         zkClient.addDataListener(rootPath, cacheListener, executor);
         try {
-            // Wait for connection
+            // Wait for connection 得到初始化超时时间如果没有配置的话默认为5000
             long timeout = url.getParameter("init.timeout", 5000);
-            boolean isCountDown = this.initializedLatch.await(timeout, TimeUnit.MILLISECONDS);
+            boolean isCountDown = this.initializedLatch.await(timeout, TimeUnit.MILLISECONDS);//当zk服务端连接建立完毕,后调用到监听器执行countDown()
             if (!isCountDown) {
                 throw new IllegalStateException("Failed to receive INITIALIZED event from zookeeper, pls. check if url "
                         + url + " is correct");

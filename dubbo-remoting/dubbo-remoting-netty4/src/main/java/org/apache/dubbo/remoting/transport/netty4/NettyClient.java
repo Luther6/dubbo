@@ -78,7 +78,7 @@ public class NettyClient extends AbstractClient {
      */
     public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
     	// you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
-    	// the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
+    	// the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler aop handler
     	super(url, wrapChannelHandler(url, handler));
     }
 
@@ -103,18 +103,18 @@ public class NettyClient extends AbstractClient {
 
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
-                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
+                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());//心跳时间
 
                 if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
                     ch.pipeline().addLast("negotiation", SslHandlerInitializer.sslClientHandler(getUrl(), nettyClientHandler));
                 }
 
-                NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
+                NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);//code协议  dubbo
                 ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
-                        .addLast("decoder", adapter.getDecoder())
+                        .addLast("decoder", adapter.getDecoder())//
                         .addLast("encoder", adapter.getEncoder())
                         .addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS))
-                        .addLast("handler", nettyClientHandler);
+                        .addLast("handler", nettyClientHandler);//处理类
 
                 String socksProxyHost = ConfigUtils.getProperty(SOCKS_PROXY_HOST);
                 if(socksProxyHost != null) {
@@ -131,14 +131,14 @@ public class NettyClient extends AbstractClient {
         long start = System.currentTimeMillis();
         ChannelFuture future = bootstrap.connect(getConnectAddress());
         try {
-            boolean ret = future.awaitUninterruptibly(getConnectTimeout(), MILLISECONDS);
+            boolean ret = future.awaitUninterruptibly(getConnectTimeout(), MILLISECONDS);//应用连接超时时间
 
             if (ret && future.isSuccess()) {
-                Channel newChannel = future.channel();
+                Channel newChannel = future.channel();//获取到连接的一个channel与服务端对应
                 try {
                     // Close old channel
                     // copy reference
-                    Channel oldChannel = NettyClient.this.channel;
+                    Channel oldChannel = NettyClient.this.channel;//关闭旧的连接,因为参数可能改变
                     if (oldChannel != null) {
                         try {
                             if (logger.isInfoEnabled()) {

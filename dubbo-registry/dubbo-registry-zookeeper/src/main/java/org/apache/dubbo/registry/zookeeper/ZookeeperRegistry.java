@@ -125,7 +125,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     @Override
     public void doRegister(URL url) {
         try {
-            zkClient.create(toUrlPath(url), url.getParameter(DYNAMIC_KEY, true));
+            zkClient.create(toUrlPath(url), url.getParameter(DYNAMIC_KEY, true));///dubbo/com.luther.api.CountryService/providers/dubbo%3A%2F%2F192.168.28.1%3A20881%2Fhello%3Fanyhost%3Dtrue%26application%3Ddemo-provider%26async%3Dtrue%26deprecated%3Dfalse%26dubbo%3D2.0.2%26dynamic%3Dtrue%26export%3Dtrue%26generic%3Dfalse%26getCountry.timeout%3D17898%26interface%3Dcom.luther.api.CountryService%26metadata-type%3Dremote%26methods%3DgetCountry%26pid%3D5652%26release%3D2.7%26server%3Dnetty4%26service.filter%3Dcus%26side%3Dprovider%26timeout%3D7561%26timestamp%3D1582126417330%26token%3D123
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
@@ -172,11 +172,14 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
                     ChildListener zkListener = listeners.computeIfAbsent(listener, k -> (parentPath, currentChilds) -> ZookeeperRegistry.this.notify(url, k, toUrlsWithEmpty(url, parentPath, currentChilds)));
                     zkClient.create(path, false);
+                    //添加该路径下的子节点的监听器并返回所有子节点的内容
                     List<String> children = zkClient.addChildListener(path, zkListener);
                     if (children != null) {
+                        //对子节点内容生成url
                         urls.addAll(toUrlsWithEmpty(url, path, children));
                     }
                 }
+                //通知服务列表配置更改信息 并执行invoker翻译
                 notify(url, listener, urls);
             }
         } catch (Throwable e) {
@@ -269,6 +272,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 provider = URL.decode(provider);
                 if (provider.contains(PROTOCOL_SEPARATOR)) {
                     URL url = URL.valueOf(provider);
+                    //校验url是否符合 兼容2.6及以下版本 version 等信息校验
                     if (UrlUtils.isMatch(consumer, url)) {
                         urls.add(url);
                     }

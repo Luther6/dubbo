@@ -53,7 +53,7 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
 
         try {
             if (InvokeMode.SYNC == ((RpcInvocation) invocation).getInvokeMode()) {
-                asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
+                asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);//将异步调用转为同步调用,阻塞在这里等结果
             }
         } catch (InterruptedException e) {
             throw new RpcException("Interrupted unexpectedly while waiting for remoting result to return!  method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);

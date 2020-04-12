@@ -165,7 +165,12 @@ public class ConfigValidationUtils {
      */
     private static final Pattern PATTERN_KEY = Pattern.compile("[*,\\-._0-9a-zA-Z]+");
 
-
+    /**
+     * 根据条件解析需要使用到的注册中心url
+     * @param interfaceConfig
+     * @param provider
+     * @return
+     */
     public static List<URL> loadRegistries(AbstractInterfaceConfig interfaceConfig, boolean provider) {
         // check && override if necessary
         List<URL> registryList = new ArrayList<URL>();
@@ -177,23 +182,30 @@ public class ConfigValidationUtils {
                 if (StringUtils.isEmpty(address)) {
                     address = ANYHOST_VALUE;
                 }
+                //N/A 不注册
                 if (!RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
                     Map<String, String> map = new HashMap<String, String>();
+                    //url中添加必要的参数 application config
                     AbstractConfig.appendParameters(map, application);
                     AbstractConfig.appendParameters(map, config);
+                    //设置pathKey 默认为RegistryService的binaryName
                     map.put(PATH_KEY, RegistryService.class.getName());
+                    //添加系统运行参数
                     AbstractInterfaceConfig.appendRuntimeParameters(map);
+                    //添加协议
                     if (!map.containsKey(PROTOCOL_KEY)) {
                         map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                     }
+                    //配置参数对registry生成特定的url
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
                     for (URL url : urls) {
-
+                        //替换url zookeeper...->registry
                         url = URLBuilder.from(url)
                                 .addParameter(REGISTRY_KEY, url.getProtocol())
                                 .setProtocol(extractRegistryType(url))
                                 .build();
+                        //判断是否是provider类型 判断register与subscribe 控制是否只读或者是否只写
                         if ((provider && url.getParameter(REGISTER_KEY, true))
                                 || (!provider && url.getParameter(SUBSCRIBE_KEY, true))) {
                             registryList.add(url);

@@ -126,13 +126,13 @@ final class HeaderExchangeChannel implements ExchangeChannel {
             throw new RemotingException(this.getLocalAddress(), null, "Failed to send request " + request + ", cause: The channel " + this + " is closed!");
         }
         // create request.
-        Request req = new Request();
+        Request req = new Request();//会更新invokeId
         req.setVersion(Version.getProtocolVersion());
         req.setTwoWay(true);
         req.setData(request);
         DefaultFuture future = DefaultFuture.newFuture(channel, req, timeout, executor);
         try {
-            channel.send(req);
+            channel.send(req);//通过通道发送invocation
         } catch (RemotingException e) {
             future.cancel();
             throw e;

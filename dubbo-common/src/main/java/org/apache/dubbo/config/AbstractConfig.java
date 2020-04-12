@@ -123,16 +123,32 @@ public abstract class AbstractConfig implements Serializable {
             try {
                 String name = method.getName();
                 if (MethodUtils.isGetter(method)) {
+                    //可以通过@Parameter注解指定是否出该属性,或者指定key
+                    //
+                    //      String key() default "";
+                    //
+                    //    boolean required() default false;
+                    //
+                    //    boolean excluded() default false;
+                    //
+                    //    boolean escaped() default false;
+                    //
+                    //    boolean attribute() default false;
+                    //
+                    //    boolean append() default false;
+
                     Parameter parameter = method.getAnnotation(Parameter.class);
                     if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
                         continue;
                     }
                     String key;
+                    //获取key
                     if (parameter != null && parameter.key().length() > 0) {
                         key = parameter.key();
                     } else {
                         key = calculatePropertyFromGetter(name);
                     }
+                    //调用方法获取值,并校验缓存
                     Object value = method.invoke(config);
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {
@@ -152,6 +168,7 @@ public abstract class AbstractConfig implements Serializable {
                     } else if (parameter != null && parameter.required()) {
                         throw new IllegalStateException(config.getClass().getSimpleName() + "." + key + " == null");
                     }
+                    //getParameters -todo
                 } else if (isParametersGetter(method)) {
                     Map<String, String> map = (Map<String, String>) method.invoke(config, new Object[0]);
                     parameters.putAll(convert(map, prefix));
@@ -318,6 +335,7 @@ public abstract class AbstractConfig implements Serializable {
                 && method.getParameterCount() == 1
                 && Map.class == method.getParameterTypes()[0]
                 && method.getReturnType() == void.class);
+
     }
 
     private static Map<String, String> convert(Map<String, String> parameters, String prefix) {
@@ -408,16 +426,20 @@ public abstract class AbstractConfig implements Serializable {
             try {
                 String name = method.getName();
                 if (MethodUtils.isMetaMethod(method)) {
+                    //得到该属性的key
                     String key;
+                    //可以属性的方法上使用Parameter指定key
                     Parameter parameter = method.getAnnotation(Parameter.class);
                     if (parameter != null && parameter.key().length() > 0 && parameter.useKeyAsProperty()) {
                         key = parameter.key();
                     } else {
+                        //去掉get或者is..
                         key = calculateAttributeFromGetter(name);
                     }
                     // treat url and configuration differently, the value should always present in configuration though it may not need to present in url.
                     //if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
                     if (method.getReturnType() == Object.class) {
+                        //方法返回的是Object设为null
                         metaData.put(key, null);
                         continue;
                     }
@@ -428,10 +450,11 @@ public abstract class AbstractConfig implements Serializable {
                     if (MethodUtils.isDeprecated(method) && metaData.get(key) != null) {
                         continue;
                     }
-
+                    //调用元数据方法
                     Object value = method.invoke(this);
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {
+                        //放入map中
                         metaData.put(key, str);
                     } else {
                         metaData.put(key, null);
@@ -460,7 +483,9 @@ public abstract class AbstractConfig implements Serializable {
         Environment env = ApplicationModel.getEnvironment();
         try {
             CompositeConfiguration compositeConfiguration = env.getConfiguration(getPrefix(), getId());
+            //获取到当前bean的元数据包装对象
             Configuration config = new ConfigConfigurationAdapter(this);
+            //判断是否以配置为先来改变配置顺序
             if (env.isConfigCenterFirst()) {
                 // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
                 compositeConfiguration.addConfiguration(4, config);
@@ -471,11 +496,14 @@ public abstract class AbstractConfig implements Serializable {
 
             // loop methods, get override value and set the new value back to method
             Method[] methods = getClass().getMethods();
+            //用来刷新配置的逻辑
             for (Method method : methods) {
                 if (MethodUtils.isSetter(method)) {
                     try {
+                        //extractPropertyName 用来计算属性值的key  getString()调用的是CompositeConfiguration类的方法通过之前配置的configList安顺序获取到值来刷新数据
                         String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
+                        //这里会过滤boolean类型的方法且value为true or false
                         if (StringUtils.isNotEmpty(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
                             method.invoke(this, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
                         }
@@ -485,6 +513,7 @@ public abstract class AbstractConfig implements Serializable {
                                 ", please make sure every property has getter/setter method provided.");
                     }
                 } else if (isParametersSetter(method)) {
+                    //用来直接设置parameters ??
                     String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
                     if (StringUtils.isNotEmpty(value)) {
                         Map<String, String> map = invokeGetParameters(getClass(), this);
@@ -587,6 +616,7 @@ public abstract class AbstractConfig implements Serializable {
      */
     @PostConstruct
     public void addIntoConfigManager() {
+        //每一个配置类都会调用configManager的addConfig 在spring实例化这个bean之后
         ApplicationModel.getConfigManager().addConfig(this);
     }
 

@@ -50,7 +50,7 @@ public abstract class AbstractCluster implements Cluster {
 
     @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
-        return buildClusterInterceptors(doJoin(directory), directory.getUrl().getParameter(REFERENCE_INTERCEPTOR_KEY));
+        return buildClusterInterceptors(doJoin(directory), directory.getUrl().getParameter(REFERENCE_INTERCEPTOR_KEY));//初始化FailoverClusterInvoker 缓存服务列表与注册中心url 构建集群拦截链 ConsumerContextInterceptors
     }
 
     protected abstract <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException;
@@ -88,8 +88,8 @@ public abstract class AbstractCluster implements Cluster {
         public Result invoke(Invocation invocation) throws RpcException {
             Result asyncResult;
             try {
-                interceptor.before(next, invocation);
-                asyncResult = interceptor.intercept(next, invocation);
+                interceptor.before(next, invocation);//方法拦截  调用之前的拦截
+                asyncResult = interceptor.intercept(next, invocation);//
             } catch (Exception e) {
                 // onError callback
                 if (interceptor instanceof ClusterInterceptor.Listener) {
@@ -98,7 +98,7 @@ public abstract class AbstractCluster implements Cluster {
                 }
                 throw e;
             } finally {
-                interceptor.after(next, invocation);
+                interceptor.after(next, invocation);//方法拦截之后调用
             }
             return asyncResult.whenCompleteWithContext((r, t) -> {
                 // onResponse callback

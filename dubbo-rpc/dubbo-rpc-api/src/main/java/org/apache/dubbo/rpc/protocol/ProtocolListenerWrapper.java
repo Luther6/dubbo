@@ -57,8 +57,10 @@ public class ProtocolListenerWrapper implements Protocol {
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         if (UrlUtils.isRegistry(invoker.getUrl())) {
+            //下载的url的协议为registry 所以进入registryProtocol
             return protocol.export(invoker);
         }
+        //同 dubbo  进行定义协议导出 / 对于export进行封装 还有监听器(之后看)
         return new ListenerExporterWrapper<T>(protocol.export(invoker),
                 Collections.unmodifiableList(ExtensionLoader.getExtensionLoader(ExporterListener.class)
                         .getActivateExtension(invoker.getUrl(), EXPORTER_LISTENER_KEY)));
@@ -69,6 +71,7 @@ public class ProtocolListenerWrapper implements Protocol {
         if (UrlUtils.isRegistry(url)) {
             return protocol.refer(type, url);
         }
+        //
         return new ListenerInvokerWrapper<T>(protocol.refer(type, url),
                 Collections.unmodifiableList(
                         ExtensionLoader.getExtensionLoader(InvokerListener.class)
